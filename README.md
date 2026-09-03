@@ -30,6 +30,8 @@ even faster.
 - Saved presets for frequently used load chains
 - One-time import of legacy SSGL package names, IWADs, load order, and custom
   parameters; unavailable files are preserved and marked as missing
+- Native file-picker repair for missing legacy files, including files outside
+  the main WAD library folder
 - Read-only library indexing: BFLauncher never moves, copies, or renames WADs
 
 ## Build

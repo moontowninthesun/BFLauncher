@@ -202,6 +202,9 @@ private struct LibraryListView: View {
                             model.selectedFileID = file.id
                             model.quickLaunch(file)
                         }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            model.selectedFileID = file.id
+                        })
                         .contextMenu {
                             Button(file.kind == .iwad ? "Play IWAD" : "Play") {
                                 model.quickLaunch(file)
@@ -326,6 +329,9 @@ private struct LoadChainView: View {
                             model.selectedFileID = file.id
                             model.addSelectedToChain()
                         }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            model.selectedFileID = file.id
+                        })
                         .contextMenu {
                             Button("Add to Load Chain") {
                                 model.selectedFileID = file.id
@@ -485,9 +491,19 @@ private struct AdvancedOptionsView: View {
 
 private struct PresetsView: View {
     @EnvironmentObject private var model: LauncherModel
+    @State private var presetSearch = ""
 
     private var selected: LaunchProfile? {
         model.profiles.first { $0.id == model.selectedProfileID }
+    }
+
+    private var visibleProfiles: [LaunchProfile] {
+        let query = presetSearch.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return model.profiles }
+        return model.profiles.filter {
+            $0.name.localizedCaseInsensitiveContains(query)
+                || ($0.unresolvedLegacyFiles ?? []).contains { $0.localizedCaseInsensitiveContains(query) }
+        }
     }
 
     var body: some View {
@@ -495,7 +511,11 @@ private struct PresetsView: View {
             SectionHeader(
                 title: "Presets",
                 subtitle: "Optional saved load chains, including recoverable SSGL packages."
-            ) { EmptyView() }
+            ) {
+                TextField("Search presets", text: $presetSearch)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 260)
+            }
             Divider()
             if model.profiles.isEmpty {
                 EmptyStateView(
@@ -505,7 +525,7 @@ private struct PresetsView: View {
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(model.profiles, selection: $model.selectedProfileID) { profile in
+                List(visibleProfiles, selection: $model.selectedProfileID) { profile in
                     HStack(spacing: 10) {
                         Image(systemName: profile.importedFromSSGL ? "arrow.down.doc.fill" : "bookmark.fill")
                             .foregroundStyle(profile.importedFromSSGL ? .orange : .green)
@@ -532,6 +552,9 @@ private struct PresetsView: View {
                     .tag(profile.id)
                     .contentShape(Rectangle())
                     .onTapGesture(count: 2) { model.launchProfile(profile) }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        model.selectedProfileID = profile.id
+                    })
                 }
                 .listStyle(.inset)
             }
@@ -541,6 +564,11 @@ private struct PresetsView: View {
                     if let selected { model.deleteProfile(selected) }
                 }
                 .disabled(selected == nil)
+                if let selected, selected.unresolvedCount > 0 {
+                    Button("Reconnect Missing File…") {
+                        model.reconnectMissingFile(in: selected)
+                    }
+                }
                 Spacer()
                 Button("Edit Chain") {
                     if let selected { model.loadProfile(selected) }

@@ -50,11 +50,11 @@ final class LauncherModel: ObservableObject {
         rescanSourcePorts()
         rescanLibrary()
         profiles = ProfileStore.load()
-        if defaults.integer(forKey: Key.legacyMigrationVersion) < 1 {
+        if defaults.integer(forKey: Key.legacyMigrationVersion) < 3 {
             let personalProfiles = profiles.filter { !$0.importedFromSSGL }
             profiles = personalProfiles + LegacySSGLImporter.importProfiles(from: files)
             try? ProfileStore.save(profiles)
-            defaults.set(1, forKey: Key.legacyMigrationVersion)
+            defaults.set(3, forKey: Key.legacyMigrationVersion)
         }
         status = summaryStatus
     }
@@ -211,7 +211,10 @@ final class LauncherModel: ObservableObject {
            sourcePorts.contains(where: { $0.id == sourcePortPath }) {
             defaultPortID = sourcePortPath
         }
-        loadChain = profile.modPaths.compactMap { path in files.first { $0.path == path } }
+        loadChain = profile.modPaths.compactMap { path in
+            files.first { $0.path == path }
+                ?? LibraryScanner.makeGameFile(url: URL(fileURLWithPath: path), relativeTo: wadRootURL)
+        }
         options = profile.options
         section = .chain
         let missing = profile.modPaths.count - loadChain.count + profile.unresolvedCount
@@ -242,6 +245,37 @@ final class LauncherModel: ObservableObject {
         status = "Deleted preset: \(profile.name)"
     }
 
+    func reconnectMissingFile(in profile: LaunchProfile) {
+        guard let token = profile.unresolvedLegacyFiles?.first else { return }
+        let panel = NSOpenPanel()
+        panel.title = "Reconnect \(profile.name)"
+        panel.message = "Choose the file that SSGL recorded as \(token)."
+        panel.prompt = "Reconnect"
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        if let extensionName = legacyExtension(in: token),
+           let type = UTType(filenameExtension: extensionName.lowercased()) {
+            panel.allowedContentTypes = [type]
+        }
+        panel.directoryURL = wadRootURL
+        guard panel.runModal() == .OK, let url = panel.url,
+              LibraryScanner.makeGameFile(url: url, relativeTo: wadRootURL) != nil,
+              let index = profiles.firstIndex(where: { $0.id == profile.id }) else { return }
+
+        var repaired = profile
+        if !repaired.modPaths.contains(url.standardizedFileURL.path) {
+            repaired.modPaths.append(url.standardizedFileURL.path)
+        }
+        var unresolved = repaired.unresolvedLegacyFiles ?? []
+        unresolved.removeFirst()
+        repaired.unresolvedLegacyFiles = unresolved.isEmpty ? nil : unresolved
+        profiles[index] = repaired
+        try? ProfileStore.save(profiles)
+        selectedProfileID = repaired.id
+        status = "Reconnected \(url.lastPathComponent) to \(repaired.name)"
+    }
+
     private var wadRootURL: URL? {
         guard !wadRootPath.isEmpty else { return nil }
         return URL(fileURLWithPath: wadRootPath, isDirectory: true)
@@ -250,6 +284,11 @@ final class LauncherModel: ObservableObject {
     private var preferredDoomII: GameFile? {
         iwads.first { $0.url.lastPathComponent.caseInsensitiveCompare("DOOM2.WAD") == .orderedSame }
             ?? iwads.first { $0.displayName.lowercased().contains("doom ii") }
+    }
+
+    private func legacyExtension(in token: String) -> String? {
+        ["WAD", "PK3", "PK7", "ZIP", "DEH", "BEX", "LMP"]
+            .first { token.uppercased().hasSuffix($0) }
     }
 
     private func launch(mods: [GameFile]) {

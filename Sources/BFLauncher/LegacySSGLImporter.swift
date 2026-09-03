@@ -75,10 +75,11 @@ private struct LegacyPackage: Decodable {
     let userparams: String?
 }
 
-private struct LegacyFileLookup {
+struct LegacyFileLookup {
     let files: [GameFile]
 
     func match(token: String) -> GameFile? {
+        if let synthetic = matchSyntheticID(token) { return synthetic }
         guard let parsed = parse(token: token) else { return nil }
         let exact = files.filter {
             $0.fileExtension.caseInsensitiveCompare(parsed.extensionName) == .orderedSame
@@ -87,11 +88,42 @@ private struct LegacyFileLookup {
         }
         if let best = exact.min(by: pathPreference) { return best }
 
+        // SSGL encoded the file size into each synthetic ID. A WAD that was
+        // replaced by a newer revision keeps the same human filename but no
+        // longer has that historical byte count, so prefer a unique normalized
+        // filename match before falling back to size alone.
+        let nameMatches = files.filter {
+            $0.fileExtension.caseInsensitiveCompare(parsed.extensionName) == .orderedSame
+                && normalize($0.url.deletingPathExtension().lastPathComponent) == normalize(parsed.stem)
+        }
+        if let best = nameMatches.min(by: pathPreference) { return best }
+
         let sizeMatches = files.filter {
             $0.fileExtension.caseInsensitiveCompare(parsed.extensionName) == .orderedSame
                 && $0.byteCount == parsed.byteCount
         }
         return sizeMatches.min(by: pathPreference)
+    }
+
+    private func matchSyntheticID(_ token: String) -> GameFile? {
+        let extensions = ["WAD", "PK3", "PK7", "ZIP", "DEH", "BEX", "LMP"]
+        guard let extensionName = extensions.first(where: { token.uppercased().hasSuffix($0) }) else { return nil }
+        let tokenBody = normalize(String(token.dropLast(extensionName.count)))
+
+        let candidates = files.compactMap { file -> (file: GameFile, stemLength: Int, exactSize: Bool)? in
+            guard file.fileExtension.caseInsensitiveCompare(extensionName) == .orderedSame else { return nil }
+            let stem = normalize(file.url.deletingPathExtension().lastPathComponent)
+            guard !stem.isEmpty, tokenBody.hasPrefix(stem) else { return nil }
+            let suffix = String(tokenBody.dropFirst(stem.count))
+            guard !suffix.isEmpty, suffix.allSatisfy({ $0.isNumber }) else { return nil }
+            return (file, stem.count, Int64(suffix) == file.byteCount)
+        }
+
+        return candidates.sorted { left, right in
+            if left.exactSize != right.exactSize { return left.exactSize }
+            if left.stemLength != right.stemLength { return left.stemLength > right.stemLength }
+            return pathPreference(left.file, right.file)
+        }.first?.file
     }
 
     private func parse(token: String) -> (stem: String, byteCount: Int64, extensionName: String)? {

@@ -9,6 +9,7 @@ swiftc -parse-as-library \
     "$PROJECT_DIR/Sources/BFLauncher/Models.swift" \
     "$PROJECT_DIR/Sources/BFLauncher/WADInspector.swift" \
     "$PROJECT_DIR/Sources/BFLauncher/LaunchCommandBuilder.swift" \
+    "$PROJECT_DIR/Sources/BFLauncher/LegacySSGLImporter.swift" \
     "$PROJECT_DIR/Tests/SelfTest.swift" \
     -o "$TEST_BINARY"
 "$TEST_BINARY"

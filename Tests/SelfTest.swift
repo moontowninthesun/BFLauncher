@@ -8,6 +8,7 @@ struct BFLauncherSelfTest {
         try testPWADDetection()
         testOrderedLaunchCommand()
         testQuotedArguments()
+        try testLegacySyntheticIDs()
         print("BFLauncher self-tests passed")
     }
 
@@ -73,14 +74,36 @@ struct BFLauncherSelfTest {
         )
     }
 
-    private static func gameFile(_ path: String, kind: GameFileKind) -> GameFile {
+    private static func testLegacySyntheticIDs() throws {
+        let files = [
+            gameFile("/WADs/room-redux-r2.wad", kind: .mod, byteCount: 999),
+            gameFile("/WADs/AB.wad", kind: .mod, byteCount: 100),
+            gameFile("/WADs/AB2.wad", kind: .mod, byteCount: 200),
+            gameFile("/WADs/id1.pk3", kind: .mod, byteCount: 300)
+        ]
+        let lookup = LegacyFileLookup(files: files)
+        try require(
+            lookup.match(token: "room-redux-r2425930WAD")?.path == "/WADs/room-redux-r2.wad",
+            "version digit was confused with SSGL's size suffix"
+        )
+        try require(
+            lookup.match(token: "AB212818695WAD")?.path == "/WADs/AB2.wad",
+            "longest matching filename was not preferred"
+        )
+        try require(
+            lookup.match(token: "id117911130PK3")?.path == "/WADs/id1.pk3",
+            "numeric filename was not recovered"
+        )
+    }
+
+    private static func gameFile(_ path: String, kind: GameFileKind, byteCount: Int64 = 0) -> GameFile {
         GameFile(
             path: path,
             kind: kind,
             displayName: URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent,
             relativeFolder: "",
             fileExtension: URL(fileURLWithPath: path).pathExtension.uppercased(),
-            byteCount: 0,
+            byteCount: byteCount,
             modifiedAt: .distantPast,
             mapCount: 0
         )
