@@ -1,79 +1,74 @@
-<p align="center"><img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/readmelogo.png" width="350"></p>
+# BFLauncher
 
-- [Current Developer Preview Release](https://github.com/FreaKzero/ssgl-doom-launcher/releases/tag/v2.0.0-devpreview.24)
-- [First Setup Instructions](https://github.com/FreaKzero/ssgl-doom-launcher/wiki/SSGL---First-Setup)
-- [Join the SSGL Discord Server](https://discord.gg/MsjZhHF)
+**Big firepower. Small friction.**
 
-## Current Status of Release:
-Developer Preview - There can be alot of Changes which is breaking the Experience (Crashes, Invalid Configs which have to be deleted, etc), be sure of that before Downloading.
+BFLauncher is a fast, native Doom launcher for macOS. It is a modern fork and
+rewrite of [Super Shotgun Launcher](https://github.com/FreaKzero/ssgl-doom-launcher),
+built around a two-action default flow:
 
-<p align="center"><img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/readmedemo.gif" width="700" /></p>
+1. Select a PWAD.
+2. Press **Play**.
 
-## Features
-- Main Goals
-  - Builds available for Windows, MacOS and Linux (AppImage)
-  - Easy and Fast Setup
-  - Designed towards a "Fast in - Fast Out" User Experience
-  - Modern and Customizeable UI 
-  - Organize your WADs as you want on your Harddrive via Folders
-  
-- Customization
-  - Different Colorthemes
-  - Set your own Wallpaper
-  - Multi Language Support (NL, DE, EN)
-  
-- Sourceports
-  - Loadorder of Mods
-  - DEH and BEX Support (only have to care about load order)
-  - Sourceport agnostic, just configure the Sourceport as you want
-  - **SOON:** Predefined Recipies for Sourceports based on the Filename
-  
-- Filter/Search abilities for Mods and Packages
-  - Fuzzyfilter by Modname or Directory location 
-  - Find your Mods easily your own directories on your Harddrive
-  - Sort Mods and Packages by Newest, Oldest, Active, ASC or DESC 
-  
-- Package (Mod List) System
-  - Oblige Build and Play direct in SSGL, every Modlist/Package can has its own generated Map
-  - Config/Savegame Management by Package/Modlist (if the flags are set in the Sourceport)
-  - Instant Play Feature which also loads the last Savegame of the Package
-  - "Userparameters" for Advanced usage (`--fastmonsters -warp etc.`)
-  - **SOON:** Import/Export Feature
+Your preferred source port and IWAD are remembered. Double-clicking a PWAD is
+even faster.
 
-## Customization Examples
-Wallpapers which are shown here dont ship with SSGL  
+## What works today
 
-### Hell  
-<img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/theme-hell.png" width="700" />
+- Native SwiftUI interface for macOS 13 and newer
+- Universal binary: Apple Silicon and Intel
+- Automatic discovery of installed Doom source-port apps
+- Manual source-port picker for uncommon or locally built ports
+- Recursive scanning of one WAD folder for both IWADs and mods
+- Content-based IWAD recognition, including renamed IWADs
+- Doom II selected as the initial default when available
+- Search by filename or folder and sort by name, folder, or date
+- Direct launch of a single PWAD without creating a package
+- Ordered multi-file load chains for WAD, PK3, PK7, ZIP, DEH, BEX, and LMP files
+- Skill, warp, fast-monsters, no-monsters, respawn, pistol-start, and free-form
+  source-port arguments
+- Exact command preview before an advanced launch
+- Saved presets for frequently used load chains
+- One-time import of legacy SSGL package names, IWADs, load order, and custom
+  parameters; unavailable files are preserved and marked as missing
+- Read-only library indexing: BFLauncher never moves, copies, or renames WADs
 
-### UAC  
-<img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/theme-uac.png" width="700" />
+## Build
 
-### BFG  
-<img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/theme-bfg.png" width="700" />
+Full Xcode is not required. Apple's current Command Line Tools are sufficient.
 
-### Slayer  
-<img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/theme-slayer.png" width="700" />
+```sh
+Scripts/run-self-tests.sh
+Scripts/build-macos-app.sh dist
+open dist/BFLauncher.app
+```
 
-### Pinkie  
-<img src="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/readme/theme-pinkie.png" width="700" />
+The build script creates an ad-hoc-signed Universal app at
+`dist/BFLauncher.app`.
 
-## Want to see SSGL in your Mother Tongue ?
-See the LATEST [English Locale File](https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/app/client/locales/en.js) - And feel free how you send it to me, make an Issue, PR or join our Discord and PM it to me directly. Its your Choice.
+## Design
 
-# Big Thanks to
-- [Xeno1979](https://github.com/Xeno1979) (Alphatesting MacOS and NL Translation)
-- [CthePredatorG](https://www.voices.com/actors/CthePredatorG) (Alphatesting Windows)
-- [Rain](https://github.com/starpotion) (Alphatesting Windows)
-- [WolVexus](https://www.youtube.com/channel/UCC6ixAIHqKkSh3lv2tM5wwQ) (Alphatesting Windows)
-- [Leaguesman](https://github.com/Leaguesman) (Alphatesting Linux)
-- [js2me](https://github.com/js2me) and [PROPHESSOR](https://github.com/PROPHESSOR) (RU Translation)
+BFLauncher treats the folder as the library. Presets are useful for elaborate
+combinations, but they are never required to play a PWAD. This keeps the quick
+path quick while retaining precise load order and command-line control for
+advanced setups.
 
-# Fineprint
-<p align="center">DOOM is a registered Trademark of id Software LLC, a Zenimax Media company in the US and/or other Countries, and is used without permission.
-All other Trademarks are the property of their respective holders. SSGL is in no way affiliated with nor endorsed by id Software.</p>
+Useful ideas were studied from Doom Runner (folder synchronization and ordered
+presets), Doom Launcher (library management), Rocket Launcher (drag-and-drop
+load composition), and SSGL's original “fast in, fast out” goal. BFLauncher is
+a native macOS implementation with no Electron runtime.
 
-<p align="center">All Icons and Graphics included in this Project are created by me (Thomas Petrovic) and Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></p>
+## Data and privacy
 
-<p align="center"> Code Licensed under <a href="https://github.com/FreaKzero/ssgl-doom-launcher/blob/latest/app/LICENSE" target="_blank">MIT License</a> <br /> Copyright (c) 2015 Thomas Petrovic</p>
+Settings and presets are stored in `~/Library/Application Support/BFLauncher`.
+The chosen WAD folder is only read. Source ports are launched locally with the
+arguments shown in the command preview. BFLauncher has no analytics or network
+service.
 
+## Credits and license
+
+BFLauncher is an MIT-licensed fork of SSGL. The original SSGL code is retained
+in `app/` for history and attribution; the native implementation lives in
+`Sources/BFLauncher/`. Original SSGL code is copyright Thomas Petrovic.
+
+DOOM is a registered trademark of id Software LLC. BFLauncher is not affiliated
+with or endorsed by id Software, Bethesda, ZeniMax, or any source-port project.
