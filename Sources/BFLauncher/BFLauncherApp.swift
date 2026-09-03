@@ -4,6 +4,12 @@ import SwiftUI
 struct BFLauncherApp: App {
     @StateObject private var model = LauncherModel()
 
+    init() {
+        if let emblem = AppArtwork.bfgEmblem {
+            NSApplication.shared.applicationIconImage = emblem
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

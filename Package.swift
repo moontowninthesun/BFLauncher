@@ -13,7 +13,10 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "BFLauncher",
-            path: "Sources/BFLauncher"
+            path: "Sources/BFLauncher",
+            resources: [
+                .copy("Resources/BFGEmblem.png")
+            ]
         )
     ]
 )

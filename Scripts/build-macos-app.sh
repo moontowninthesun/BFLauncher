@@ -23,6 +23,10 @@ lipo -create \
     "$BUILD_DIR/BFLauncher-x86_64" \
     -output "$APP_DIR/Contents/MacOS/BFLauncher"
 cp "$PROJECT_DIR/Packaging/Info.plist" "$APP_DIR/Contents/Info.plist"
+cp "$PROJECT_DIR/Sources/BFLauncher/Resources/BFGEmblem.png" \
+    "$APP_DIR/Contents/Resources/BFGEmblem.png"
+cp "$PROJECT_DIR/Packaging/BFLauncher.icns" \
+    "$APP_DIR/Contents/Resources/BFLauncher.icns"
 chmod +x "$APP_DIR/Contents/MacOS/BFLauncher"
 codesign --force --deep --sign - "$APP_DIR"
 codesign --verify --deep --strict "$APP_DIR"

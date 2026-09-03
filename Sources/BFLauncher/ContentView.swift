@@ -39,18 +39,15 @@ private struct HeaderView: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            Label {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("BFLauncher")
-                        .font(.headline)
-                    Text("Big firepower. Small friction.")
+            HStack(spacing: 9) {
+                BFGEmblemView()
+
+                VStack(alignment: .leading, spacing: 1) {
+                    DoomWordmarkView()
+                    Text("Doom WAD Launcher for Mac")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
-            } icon: {
-                Image(systemName: "bolt.horizontal.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundStyle(.green)
             }
 
             Spacer(minLength: 8)
@@ -97,6 +94,49 @@ private struct HeaderView: View {
         .controlSize(.small)
         .padding(.horizontal, 16)
         .padding(.vertical, 11)
+    }
+}
+
+private struct BFGEmblemView: View {
+    var body: some View {
+        Group {
+            if let emblem = AppArtwork.bfgEmblem {
+                Image(nsImage: emblem)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "bolt.horizontal.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.green)
+            }
+        }
+        .frame(width: 42, height: 42)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct DoomWordmarkView: View {
+    private let title = Text("BFLauncher")
+        .font(.custom("Copperplate-Bold", size: 17))
+
+    var body: some View {
+        ZStack {
+            title
+                .foregroundStyle(.black.opacity(0.9))
+                .offset(x: 1.2, y: 1.4)
+            title
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(red: 1.0, green: 0.72, blue: 0.18),
+                                 Color(red: 0.68, green: 0.06, blue: 0.02)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("BFLauncher")
     }
 }
 

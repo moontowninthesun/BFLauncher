@@ -1,6 +1,6 @@
 # BFLauncher
 
-**Big firepower. Small friction.**
+**Doom WAD Launcher for Mac**
 
 BFLauncher is a fast, native Doom launcher for macOS. It is a modern fork and
 rewrite of [Super Shotgun Launcher](https://github.com/FreaKzero/ssgl-doom-launcher),
@@ -71,6 +71,9 @@ service.
 BFLauncher is an MIT-licensed fork of SSGL. The original SSGL code is retained
 in `app/` for history and attribution; the native implementation lives in
 `Sources/BFLauncher/`. Original SSGL code is copyright Thomas Petrovic.
+
+The BFG-inspired application emblem is original artwork created for BFLauncher;
+it is not an extracted game sprite or an id Software asset.
 
 DOOM is a registered trademark of id Software LLC. BFLauncher is not affiliated
 with or endorsed by id Software, Bethesda, ZeniMax, or any source-port project.
