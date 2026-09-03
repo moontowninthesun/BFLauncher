@@ -271,11 +271,7 @@ final class LauncherModel: ObservableObject {
         process.executableURL = command.executableURL
         process.arguments = command.arguments
         process.currentDirectoryURL = command.workingDirectoryURL
-        process.terminationHandler = { [weak self, weak process] _ in
-            Task { @MainActor in
-                if let process { self?.runningProcesses.removeAll { $0 === process } }
-            }
-        }
+        runningProcesses.removeAll { !$0.isRunning }
         do {
             try process.run()
             runningProcesses.append(process)
