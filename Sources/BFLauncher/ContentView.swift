@@ -103,6 +103,7 @@ private struct BFGEmblemView: View {
             if let emblem = AppArtwork.bfgEmblem {
                 Image(nsImage: emblem)
                     .resizable()
+                    .interpolation(.none)
                     .scaledToFit()
             } else {
                 Image(systemName: "bolt.horizontal.circle.fill")
