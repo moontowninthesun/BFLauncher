@@ -17,6 +17,7 @@ even faster.
 - Native SwiftUI interface for macOS 13 and newer
 - Universal binary: Apple Silicon and Intel
 - Automatic discovery of installed Doom source-port apps
+- Reliable foreground activation so launched ports and error windows stay visible
 - Manual source-port picker for uncommon or locally built ports
 - Recursive scanning of one WAD folder for both IWADs and mods
 - Content-based IWAD recognition, including renamed IWADs

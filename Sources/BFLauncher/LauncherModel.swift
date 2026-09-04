@@ -310,14 +310,38 @@ final class LauncherModel: ObservableObject {
         process.executableURL = command.executableURL
         process.arguments = command.arguments
         process.currentDirectoryURL = command.workingDirectoryURL
+        process.terminationHandler = { [weak self] finishedProcess in
+            Task { @MainActor [weak self] in
+                self?.runningProcesses.removeAll {
+                    $0 === finishedProcess || !$0.isRunning
+                }
+            }
+        }
         runningProcesses.removeAll { !$0.isRunning }
         do {
             try process.run()
             runningProcesses.append(process)
+            activate(process, attemptsRemaining: 12)
             let content = mods.isEmpty ? iwad.displayName : mods.map(\.displayName).joined(separator: " + ")
             status = "Launched \(content) in \(port.name)"
         } catch {
             status = "Couldn’t launch \(port.name): \(error.localizedDescription)"
+        }
+    }
+
+    /// Command-line source ports do not always make themselves frontmost on macOS.
+    /// Retry briefly while Cocoa registers the process so errors, menus, and game
+    /// windows cannot end up running unnoticed behind the launcher.
+    private func activate(_ process: Process, attemptsRemaining: Int) {
+        guard process.isRunning else { return }
+        if let application = NSRunningApplication(processIdentifier: process.processIdentifier) {
+            application.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+            return
+        }
+        guard attemptsRemaining > 0 else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self, weak process] in
+            guard let process else { return }
+            self?.activate(process, attemptsRemaining: attemptsRemaining - 1)
         }
     }
 }
